@@ -1,43 +1,41 @@
-import threading
-import multiprocessing
+from multiprocessing import Pool, Manager
+import time
+import random
+import os
 
-s = 0
+def theory(k:int):
+    pid = os.getpid()
+    if pid not in pids:
+        pids.append(pid)
+    n = 0
 
-def task1():
-    s = 0
-    for i in range(15):
-        s+=i
-    print(s)
+    while(k != 1):
+        if k % 2 == 0:
+            k //= 2
+        else:
+            k = 3*k + 1
+        n += 1
+    
+    return n
 
-def task2():
-    s = 1
-    for i in range(1, 15):
-        s *= i* 100
+numbers = [random.randint(2, 1000) for x in range(1_00_000)]
+# print(numbers)
+# print("==================================================")
+start = time.time()
+with Manager() as manager:
 
-    print(s)
+    pids = manager.list()
 
-def threads():
-    print("Launched the threads\n")
-    thread1 = threading.Thread(target=task1)
-    thread2 = threading.Thread(target=task2)
+    with Pool() as p:
+        result = p.map(theory, numbers, chunksize=1)
+        print(f'Кількість процесів - {p._processes}')
+        print('=============================================')
+    
+    print(f'Задіянна кількість процесів - {len(pids)}')
+finish = time.time()
 
-    thread1.start()
-    thread2.start()
+mean = sum(result)/len(result)
+print(f"Середня кількість кроків - {mean}")
+print(f"Час виконання завдання - {finish - start}")
 
-    thread1.join()
-    thread2.join()
-
-def processes():
-    print("Launched the processes\n")
-    process1 = multiprocessing.Process(target=task1)
-    process2 = multiprocessing.Process(target=task2)
-
-    process1.start()
-    process2.start()
-
-    process1.join()
-    process2.join()
-
-if __name__ == '__main__':
-    threads()
-    processes()
+# print(theory(845))
